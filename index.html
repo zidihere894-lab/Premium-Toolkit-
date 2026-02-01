@@ -3,32 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZIDDI ULTIMATE</title>
+    <title>ZIDDI ULTIMATE | Premium</title>
     <style>
-        body { background: #050608; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #121418; padding: 30px; border-radius: 35px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #222; box-shadow: 10px 10px 30px #000; }
-        input { width: 90%; padding: 15px; margin: 10px 0; border-radius: 15px; border: none; background: #000; color: #00ff88; text-align: center; outline: none; }
-        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; background: #00ff88; color: #000; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        :root { --bg: #050608; --card: #121418; --accent: #00ff88; --shadow: 10px 10px 30px #000; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: var(--card); padding: 25px; border-radius: 40px; width: 90%; max-width: 420px; text-align: center; border: 1px solid #222; box-shadow: var(--shadow); }
+        
+        /* Premium Plan Cards */
+        .plan-box { background: #1c2126; padding: 20px; border-radius: 25px; margin: 15px 0; border: 1px solid #333; transition: 0.3s; }
+        .plan-box:hover { border-color: var(--accent); }
+        .price { font-size: 32px; font-weight: 900; color: var(--accent); margin: 5px 0; }
+        
+        /* Inputs & Buttons */
+        .neu-in { width: 90%; padding: 15px; margin: 10px 0; border-radius: 15px; border: none; background: #000; color: var(--accent); text-align: center; outline: none; }
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 15px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .link-toggle { color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 13px; margin-top: 15px; display: block; }
+        
+        /* Dashboard Styling */
+        #tool-ui { display: none; }
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .tool-card { background: #000; padding: 15px; border-radius: 20px; border: 1px solid #222; cursor: pointer; }
+        
+        #plans-screen, #login-gate { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div id="login-box">
-            <h2 style="color:#00ff88;">ZIDDI LOGIN</h2>
-            <input type="text" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Password">
-            <button class="btn" onclick="checkAuth()">UNLOCK TOOLS</button>
-            <p id="msg" style="color:red; font-size:12px;"></p>
+
+<div class="container">
+    
+    <div id="plans-screen">
+        <h1 style="color:var(--accent); letter-spacing:1px;">ZIDDI PREMIUM</h1>
+        <p style="color:#666; font-size:12px;">Select a plan to unlock all tools</p>
+        
+        <div class="plan-box">
+            <div style="font-size:14px; color:#aaa;">LITE (30 DAYS)</div>
+            <div class="price">300 PKR</div>
+            <button class="btn-main" onclick="buy('300')">Buy Now</button>
         </div>
-        <div id="premium-content"></div>
+
+        <div class="plan-box" style="border: 1px solid var(--accent);">
+            <div style="font-size:14px; color:#aaa;">PRO (90 DAYS)</div>
+            <div class="price">500 PKR</div>
+            <button class="btn-main" onclick="buy('500')">Buy Now</button>
+        </div>
+
+        <div class="plan-box">
+            <div style="font-size:14px; color:#aaa;">ULTRA (LIFETIME)</div>
+            <div class="price">1000 PKR</div>
+            <button class="btn-main" onclick="buy('1000')">Buy Now</button>
+        </div>
+
+        <span class="link-toggle" onclick="showView('login')">Already have an account? Login</span>
     </div>
 
-    <script>
-        async function checkAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('pass').value;
+    <div id="login-gate" style="display:none;">
+        <h2 style="color:var(--accent);">MEMBER LOGIN</h2>
+        <input type="text" id="email" class="neu-in" placeholder="Member Email">
+        <input type="password" id="pass" class="neu-in" placeholder="Password">
+        <button class="btn-main" onclick="checkAuth()">Login to Dashboard</button>
+        <span class="link-toggle" onclick="showView('plans')">View Pricing Plans</span>
+        <p id="msg" style="color:#ff4444; font-size:12px; margin-top:10px;"></p>
+    </div>
 
-            // Requesting the server (The hacker can't see what's inside the API)
+    <div id="tool-ui">
+        </div>
+
+</div>
+
+<script>
+    function showView(v) {
+        document.getElementById('plans-screen').style.display = (v === 'plans') ? 'block' : 'none';
+        document.getElementById('login-gate').style.display = (v === 'login') ? 'block' : 'none';
+    }
+
+    function buy(p) {
+        window.open(`https://wa.me/923402439417?text=I_want_to_buy_Ziddi_Plan_${p}`, '_blank');
+    }
+
+    async function checkAuth() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pass').value;
+        const msg = document.getElementById('msg');
+
+        if(!email || !password) return;
+        msg.innerText = "Verifying Access...";
+
+        try {
             const response = await fetch('/api/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -38,12 +99,41 @@
             const data = await response.json();
 
             if (data.success) {
-                document.getElementById('login-box').style.display = 'none';
-                document.getElementById('premium-content').innerHTML = data.injectHtml;
+                // Persistent Login
+                localStorage.setItem('z_email', email);
+                localStorage.setItem('z_pass', password);
+                
+                // Switch UI
+                document.getElementById('plans-screen').style.display = 'none';
+                document.getElementById('login-gate').style.display = 'none';
+                document.getElementById('tool-ui').style.display = 'block';
+                
+                // Inject Tool HTML from Server
+                document.getElementById('tool-ui').innerHTML = data.injectHtml + 
+                `<button onclick="logout()" style="background:none; border:none; color:#666; margin-top:20px; cursor:pointer;">Logout Account</button>`;
             } else {
-                document.getElementById('msg').innerText = "Wrong Login or Plan Expired!";
+                msg.innerText = "Invalid Credentials or Expired!";
             }
+        } catch (e) {
+            msg.innerText = "Server Error! Check API Connection.";
         }
-    </script>
+    }
+
+    function logout() {
+        localStorage.clear();
+        location.reload();
+    }
+
+    // Auto-Login on Load
+    window.onload = () => {
+        const savedE = localStorage.getItem('z_email');
+        const savedP = localStorage.getItem('z_pass');
+        if (savedE && savedP) {
+            document.getElementById('email').value = savedE;
+            document.getElementById('pass').value = savedP;
+            checkAuth();
+        }
+    }
+</script>
 </body>
 </html>
