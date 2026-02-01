@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ZIDDI ULTIMATE | Premium Tool</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root { --bg: #050608; --card: #121418; --accent: #00ff88; --shadow: 10px 10px 30px #000; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: var(--card); padding: 25px; border-radius: 35px; width: 90%; max-width: 420px; text-align: center; box-shadow: var(--shadow); border: 1px solid #222; }
+        
+        /* Plans Styling */
+        .plan-card { background: #1c2126; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #333; transition: 0.3s; }
+        .plan-card:hover { border-color: var(--accent); }
+        .price { font-size: 28px; font-weight: bold; color: var(--accent); margin: 5px 0; }
+        .buy-btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; }
+        
+        /* Input & Login Styling */
+        .neu-in { width: 90%; padding: 15px; margin: 10px 0; border-radius: 15px; border: none; background: #000; color: var(--accent); outline: none; text-align: center; box-shadow: inset 4px 4px 10px #000; }
+        .login-toggle { color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 15px; display: block; }
+        
+        /* Tool UI */
+        #tool-ui, #login-gate { display: none; }
+        .app-grid { display: flex; justify-content: space-around; background: #000; padding: 20px; border-radius: 20px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="plans-screen">
+        <h2 style="color:var(--accent); margin-bottom:5px;">ZIDDI PREMIUM</h2>
+        <p style="font-size:12px; color:#888;">Select a plan to unlock tools</p>
+        
+        <div class="plan-card">
+            <div style="font-size:14px;">LITE PLAN (1 Month)</div>
+            <div class="price">300 PKR</div>
+            <button class="buy-btn" onclick="buy('Lite 300')">Buy Now</button>
+        </div>
+
+        <div class="plan-card">
+            <div style="font-size:14px;">PRO PLAN (3 Months)</div>
+            <div class="price">500 PKR</div>
+            <button class="buy-btn" onclick="buy('Pro 500')">Buy Now</button>
+        </div>
+
+        <div class="plan-card" style="border: 1px solid var(--accent);">
+            <div style="font-size:14px;">ULTRA PLAN (Lifetime)</div>
+            <div class="price">1000 PKR</div>
+            <button class="buy-btn" onclick="buy('Ultra 1000')">Buy Now</button>
+        </div>
+
+        <span class="login-toggle" onclick="toggleView('login')">Already have an account? Login here</span>
+    </div>
+
+    <div id="login-gate">
+        <h2 style="color:var(--accent);">MEMBER LOGIN</h2>
+        <input type="text" id="u-mail" class="neu-in" placeholder="Member Gmail">
+        <input type="password" id="u-pass" class="neu-in" placeholder="Password">
+        <button class="buy-btn" onclick="login()">Login to Dashboard</button>
+        <span class="login-toggle" onclick="toggleView('plans')">Back to Plans</span>
+        <p id="msg" style="color:#ff4444; font-size:12px; margin-top:10px;"></p>
+    </div>
+
+    <div id="tool-ui">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span id="display-user" style="color:var(--accent); font-weight:bold;">User</span>
+            <span id="days-left" style="font-size:10px; background:#333; padding:5px 10px; border-radius:8px;">Checking...</span>
+        </div>
+
+        <div class="app-grid">
+            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="45" onclick="alert('TikTok Link Copied')">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="45" onclick="alert('Instagram Link Copied')">
+            <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="45" onclick="alert('Facebook Link Copied')">
+        </div>
+
+        <div style="margin-top:20px; background:#000; padding:15px; border-radius:15px; text-align:left; height:100px; overflow-y:auto; font-size:11px; color:var(--accent); border:1px solid #222;">
+            > Premium Session Active...<br>> Status: All Tools Unlocked.
+        </div>
+        <button onclick="logout()" style="background:none; border:none; color:grey; margin-top:20px; cursor:pointer; font-size:12px;">Logout Account</button>
+    </div>
+
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCFy28nNtxhkjfpOd0aCfYkjHUwErh1WVQ",
+  authDomain: "movie-1e6fc.firebaseapp.com",
+  projectId: "movie-1e6fc",
+  storageBucket: "movie-1e6fc.firebasestorage.app",
+  messagingSenderId: "371616954594",
+  appId: "1:371616954594:web:977d88ec7570df351246bb"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+window.onload = function() {
+    const savedU = localStorage.getItem('ziddi_user');
+    const savedP = localStorage.getItem('ziddi_pass');
+    if (savedU && savedP) processLogin(savedU, savedP, false);
+};
+
+function toggleView(view) {
+    document.getElementById('plans-screen').style.display = (view === 'plans') ? 'block' : 'none';
+    document.getElementById('login-gate').style.display = (view === 'login') ? 'block' : 'none';
+}
+
+function buy(plan) {
+    const wa = `https://wa.me/923402439417?text=I_want_to_buy_${plan}`;
+    window.open(wa, '_blank');
+}
+
+function login() {
+    const e = document.getElementById('u-mail').value;
+    const p = document.getElementById('u-pass').value;
+    if(e && p) processLogin(e, p, true);
+}
+
+function processLogin(email, pass, isNew) {
+    const path = email.replace(/\./g, ',');
+    db.ref('premium_members/' + path).once('value', snap => {
+        const data = snap.val();
+        if (data && data.password === pass) {
+            const now = new Date().getTime();
+            if (now > data.expiry) {
+                if(isNew) document.getElementById('msg').innerText = "Expired Account!";
+                return;
+            }
+            if (isNew && data.is_login) {
+                document.getElementById('msg').innerText = "First logout then login!";
+                return;
+            }
+
+            // Persistence
+            localStorage.setItem('ziddi_user', email);
+            localStorage.setItem('ziddi_pass', pass);
+            db.ref('premium_members/' + path).update({ is_login: true });
+
+            // UI Switch
+            document.getElementById('plans-screen').style.display = 'none';
+            document.getElementById('login-gate').style.display = 'none';
+            document.getElementById('tool-ui').style.display = 'block';
+            document.getElementById('display-user').innerText = email.split('@')[0];
+            let d = Math.floor((data.expiry - now) / (1000*60*60*24));
+            document.getElementById('days-left').innerText = d + " Days Left";
+        } else {
+            if(isNew) document.getElementById('msg').innerText = "Invalid Login!";
+        }
+    });
+}
+
+function logout() {
+    const e = localStorage.getItem('ziddi_user');
+    if(e) db.ref('premium_members/' + e.replace(/\./g, ',')).update({ is_login: false });
+    localStorage.clear();
+    location.reload();
+}
+</script>
+</body>
+</html>
